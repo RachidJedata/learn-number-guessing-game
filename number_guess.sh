@@ -11,11 +11,12 @@ CLIENT=$($PSQL "SELECT user_id FROM users WHERE name='$USER_NAME'")
 if [[ -z $CLIENT ]]; then
   # If the user doesn't exist, insert them into the database
   $PSQL "INSERT INTO users(name) VALUES('$USER_NAME')" >/dev/null
+  CLIENT=$($PSQL "SELECT user_id FROM users WHERE name='$USER_NAME'")  # Fetch the new user_id
   echo "Welcome, $USER_NAME! It looks like this is your first time here."
 else
   # If the user exists, fetch their game history
   GAMES_PLAYED=$($PSQL "SELECT COUNT(*) FROM number_guesses WHERE user_id=$CLIENT")
-  BEST_GAME=$($PSQL "SELECT MIN(num_before_guess) FROM number_guesses WHERE user_id=$CLIENT")
+  BEST_GAME=$($PSQL "SELECT COALESCE(MIN(num_before_guess), 0) FROM number_guesses WHERE user_id=$CLIENT")
 
   # Display the welcome back message with game history
   echo "Welcome back, $USER_NAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
@@ -44,7 +45,7 @@ while true; do
   else
     echo "You guessed it in $COUNT tries. The secret number was $RANDOM_NUMBER. Nice job!"
     # Insert the game result into the database
-    $PSQL "INSERT INTO number_guesses(user_id, num_before_guess) VALUES($CLIENT, $COUNT);" >/dev/null
+    $PSQL "INSERT INTO number_guesses(user_id, num_before_guess) VALUES($CLIENT, $COUNT)" >/dev/null
     break
   fi
 done
