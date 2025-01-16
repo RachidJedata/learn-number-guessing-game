@@ -1,3 +1,4 @@
+that is my database quieries or you can use .sql
 CREATE TABLE users(
 	user_id SERIAL PRIMARY KEY,
 	name VARCHAR(22)
